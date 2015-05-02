@@ -1,0 +1,179 @@
+<html>
+<head>
+<script src='http://code.jquery.com/jquery-2.1.3.min.js'></script>
+</head>
+<body style="padding:0;margin:0">
+<canvas id="Canvas" width="200" height="600"></canvas>
+<script>
+var Botoes = [];
+var Barra = new Image();
+var SubBarra = new Image();
+var SetaDireita = new Image();
+var SetaBaixo = new Image();
+var c = document.getElementById("Canvas");
+var ctx = c.getContext("2d");
+
+c.height = $(window).height();
+ctx.font = "12px Arial";
+Barra.src = "Imagens/BarraMenuLateral.png";
+SubBarra.src = "Imagens/BarraMenuLateral2.png";
+SetaDireita.src = "Imagens/SetaDireita.png";
+SetaBaixo.src = "Imagens/SetaBaixo.png";
+ctx.drawImage(Barra, 0, 0);
+
+function BotaoMenu(Texto, x, y){
+	this.Texto = Texto;
+	this.Pai = null;
+	this.x = x;
+	this.y = y;
+	this.Filhos = [];
+	this.Aberto = false;
+	this.SubBotao = 0;
+	this.gtx = x;
+	this.gty = y;
+	this.Clicar = function(){
+		if(this.Aberto){
+			this.Fechar();
+		}else{
+			this.Abrir();
+		}
+	}
+	this.GetRealY = function(){
+		if(this.SubBotao == 0){
+			return(this.y);
+		}else{
+			return(this.Pai.GetRealY()+this.y);
+		}
+	}
+	this.Fechar = function(){
+		if(this.Aberto){
+			this.Aberto = false;
+			for(this.j = 0; this.j < this.Filhos.length; this.j += 1){
+				this.Filhos[this.j].Fechar();
+				SubirUmDegrauAbaixoDe(this.Filhos[this.j]);
+			}
+		}
+	}
+	this.Abrir = function(){
+		if(!this.Aberto){
+			this.Aberto = true;
+			for(j = 0; j < this.Filhos.length; j += 1){
+				DescerUmDegrauAbaixoDe(this);
+			}
+		}
+	}
+	this.Update = function(){
+		this.x += (this.gtx-this.x)/5;
+		this.y += (this.gty-this.y)/5;
+		if(this.SubBotao == 0){
+			ctx.drawImage(Barra, this.x, this.GetRealY());
+			ctx.fillText(this.Texto, (this.SubBotao*10)+this.x+16, this.GetRealY()+22);
+			if(this.Filhos.length > 0){
+				if(this.Aberto){
+					ctx.drawImage(SetaBaixo, (this.SubBotao*10)+this.x+2, this.GetRealY()+11);
+				}else{
+					ctx.drawImage(SetaDireita, (this.SubBotao*10)+this.x+2, this.GetRealY()+11);
+				}
+			}
+			if(this.Aberto && this.Filhos.length > 0){
+				for(q = 0; q < this.Filhos.length; q += 1){
+					this.Filhos[q].Update();
+				}
+			}
+		}else if(this.Pai.Aberto){
+			ctx.drawImage(SubBarra, this.x, this.GetRealY());
+			ctx.fillText(this.Texto, (this.SubBotao*10)+this.x+16, this.GetRealY()+22);
+			if(this.Filhos.length > 0){
+				if(this.Aberto){
+					ctx.drawImage(SetaBaixo, (this.SubBotao*10)+this.x+2, this.GetRealY()+11);
+				}else{
+					ctx.drawImage(SetaDireita, (this.SubBotao*10)+this.x+2, this.GetRealY()+11);
+				}
+			}
+			if(this.Aberto && this.Filhos.length > 0){
+				for(q = 0; q < this.Filhos.length; q += 1){
+					this.Filhos[q].Update();
+				}
+			}
+		}
+	}
+}
+
+function SubirUmDegrauAbaixoDe(Botao){
+	for(q = 0; q < Botoes.length; q += 1){
+		if(Botoes[q].GetRealY() > Botao.Pai.GetRealY() && Botoes[q].SubBotao == 0){
+			Botoes[q].gty -= 32;
+		}
+	}
+	if(Botao.Pai.SubBotao > 0){
+		for(b = 0; b < Botao.Pai.Pai.Filhos.length; b += 1){
+			if(Botao.Pai.Pai.Filhos[b].GetRealY() > Botao.GetRealY()){
+				Botao.Pai.Pai.Filhos[b].gty -= 32;
+			}
+		}
+	}
+}
+
+function DescerUmDegrauAbaixoDe(Botao){
+	for(q = 0; q < Botoes.length; q += 1){
+		if(Botoes[q].GetRealY() > Botao.GetRealY() && Botoes[q].SubBotao == 0){
+			Botoes[q].gty += 32;
+		}
+	}
+	if(Botao.SubBotao > 0){
+		for(b = 0; b < Botao.Pai.Filhos.length; b += 1){
+			if(Botao.Pai.Filhos[b].GetRealY() > Botao.GetRealY()){
+				Botao.Pai.Filhos[b].gty += 32;
+			}
+		}
+	}
+}
+
+for(i = 0; i < 10; i += 1){
+	var b = new BotaoMenu("Botao "+i, 0, 32*i);
+	Botoes.push(b);
+	for(q = 0; q < 4; q += 1){
+		var sb = new BotaoMenu("Botao "+i+"."+q, 0, 32*(q+1));
+		sb.SubBotao = 1;
+		sb.Pai = b;
+		b.Filhos.push(sb);
+		Botoes.push(sb);
+		if(i == 0){
+			var sbb = new BotaoMenu("Botao "+i+"."+q+".0", 0, 32);
+			sbb.SubBotao = 2;
+			sbb.Pai = sb;
+			sb.Filhos.push(sbb);
+			Botoes.push(sbb);
+		}
+	}
+}
+
+setInterval(Update, 1000/30);
+
+function Update(){
+	ctx.clearRect(0, 0, c.width, c.height);
+	for(i = 0; i < Botoes.length; i += 1){
+		if(Botoes[i].SubBotao == 0){
+			Botoes[i].Update(0);
+		}
+	}
+}
+
+c.addEventListener('click', function(e){
+	for(i = 0; i < Botoes.length; i += 1){
+		if(Botoes[i].SubBotao == 0){
+			realY = Botoes[i].GetRealY();
+			if(realY < e.pageY && realY+32 > e.pageY){
+				Botoes[i].Clicar();
+			}
+		}else if(Botoes[i].Pai.Aberto){
+			realY = Botoes[i].GetRealY();
+			if(realY < e.pageY && realY+32 > e.pageY){
+				Botoes[i].Clicar();
+			}
+		}
+	}
+}, false);
+</script>
+</body>
+</html>
