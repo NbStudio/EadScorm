@@ -13,6 +13,8 @@ var SetaBaixo = new Image();
 var c = document.getElementById("Canvas");
 var ctx = c.getContext("2d");
 
+var teste = false;
+
 c.height = $(window).height();
 ctx.font = "12px Arial";
 Barra.src = "Imagens/BarraMenuLateral.png";
@@ -91,8 +93,8 @@ function BotaoMenu(Texto, x, y){
 				}
 			}
 			if(this.Aberto && this.Filhos.length > 0){
-				for(q = 0; q < this.Filhos.length; q += 1){
-					this.Filhos[q].Update();
+				for(this.q = 0; this.q < this.Filhos.length; this.q += 1){
+					this.Filhos[this.q].Update();
 				}
 			}
 		}
@@ -138,7 +140,7 @@ for(i = 0; i < 10; i += 1){
 		sb.Pai = b;
 		b.Filhos.push(sb);
 		Botoes.push(sb);
-		if(i == 0){
+		if(i <= 1){
 			var sbb = new BotaoMenu("Botao "+i+"."+q+".0", 0, 32);
 			sbb.SubBotao = 2;
 			sbb.Pai = sb;
@@ -160,6 +162,9 @@ function Update(){
 }
 
 c.addEventListener('click', function(e){
+	if(e.pageY > 32){
+		teste = true;
+	}
 	for(i = 0; i < Botoes.length; i += 1){
 		if(Botoes[i].SubBotao == 0){
 			realY = Botoes[i].GetRealY();
